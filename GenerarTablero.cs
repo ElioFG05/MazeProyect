@@ -4,10 +4,12 @@ public class GenerarTablero
     {
         Camino,       // Representa un camino transitable
         Obstaculo,    // Representa un obstáculo (pared)
-        Trampa        // Representa una trampa oculta
+        Trampa,       // Representa una trampa oculta
+        
+
     }
 
-    public static Casilla[,] Generar(int ancho, int alto, int cantidadObstaculos, int cantidadTrampas)
+    public static (Casilla[,], List<(int fila, int columna, Trampa.Tipo tipo)>) Generar(int ancho, int alto, int cantidadTrampas)
     {
         var tablero = new Casilla[alto, ancho];
         var random = new Random();
@@ -18,7 +20,7 @@ public class GenerarTablero
         List<(int fila, int columna, Trampa.Tipo tipo)> trampas = new();
         ColocarTrampas(tablero, cantidadTrampas, random, trampas);
 
-        return tablero;
+        return (tablero,trampas);
     }
 
     private static void Inicializar(Casilla[,] tablero)
@@ -68,7 +70,7 @@ public class GenerarTablero
             }
         }
     }
-
+    
     private static Trampa.Tipo GenerarTipoTrampa(Random random)
     {
         int tipo = random.Next(3); // Suponiendo 3 tipos de trampas

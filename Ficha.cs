@@ -8,7 +8,7 @@ public class Ficha
     public int Cooldown { get; internal set; } // Propiedad de enfriamiento
     public int Puntos { get; private set; } // Puntos o vida de la ficha
 
-    public Ficha(string nombre, int fila, int columna, ConsoleColor color, string habilidad, int cooldown = 0, int puntosIniciales = 5)
+    public Ficha(string nombre, int fila, int columna, ConsoleColor color, string habilidad, int cooldown = 0, int puntosIniciales = 2)
     {
         Nombre = nombre;
         Fila = fila;
@@ -16,7 +16,7 @@ public class Ficha
         Color = color;
         Habilidad = habilidad; // Inicializa la habilidad
         Cooldown = cooldown; // Inicializa el cooldown
-        Puntos = 5; // Inicializa los puntos
+        Puntos = puntosIniciales; // Usa puntosIniciales en lugar de un valor fijo
     }
 
     public void Mover(int nuevaFila, int nuevaColumna)
@@ -26,10 +26,9 @@ public class Ficha
     }
 
     // Método para reducir los puntos
-    public void PerderPuntos(int cantidad)
+    public void PerderPuntos(int puntos)
     {
-        Puntos = Math.Max(0, Puntos - cantidad); // Evita que los puntos sean negativos
-        Console.WriteLine($"{Nombre} ha perdido {cantidad} punto(s). Puntos restantes: {Puntos}");
+        Puntos -= puntos; // Restamos los puntos
+        Console.WriteLine($"¡{Nombre} perdió {puntos} puntos! Puntos restantes: {Puntos}");
     }
-
 }
