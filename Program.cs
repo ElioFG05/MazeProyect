@@ -5,9 +5,10 @@ using System.Linq;
 
 partial class Program
 { 
-    public const int Ancho = 25;
-    public const int Alto = 24;
+    public const int Ancho = 29;
+    public const int Alto = 27;
     public const int CantidadTrampas = 15;
+    public const int CantidadObstaculos = 200;
 
     static List<Ficha> fichasSeleccionadas = new(); 
     static List<Ficha> fichasDisponibles = new() 
@@ -21,7 +22,7 @@ partial class Program
 
     static void Main()
     {
-        var (tablero, trampas) = Generar(Ancho, Alto, CantidadTrampas);
+        var (tablero, trampas) = Generar(Ancho, Alto, CantidadTrampas,CantidadObstaculos);
         Random random = new();
 
         fichasSeleccionadas.Clear();
@@ -90,27 +91,28 @@ partial class Program
     }
 
     static bool MoverFicha(Ficha ficha, int nuevaFila, int nuevaColumna, Casilla[,] tablero, List<(int fila, int columna, Trampa.Tipo tipo)> trampas)
-{
-    if (EsMovimientoValido(tablero, nuevaFila, nuevaColumna))
     {
-        ficha.Mover(nuevaFila, nuevaColumna);
-        
-        // Llamada a ManejarTrampa con los argumentos correctos
-        ManejarTrampa(nuevaFila, nuevaColumna, ficha, tablero, trampas);
-
-        if (!VerificarPuntos(ficha))
+        if (EsMovimientoValido(tablero, nuevaFila, nuevaColumna))
         {
+            ficha.Mover(nuevaFila, nuevaColumna);
+        
+            // Llamada a ManejarTrampa con los argumentos correctos
+            ManejarTrampa(nuevaFila, nuevaColumna, ficha, tablero, trampas);
+            
+            if (!VerificarPuntos(ficha))
+            {
             return false;
+            }
+            ActualizarTableroYNotificar(ficha, tablero, nuevaFila, nuevaColumna);
+            return true;
         }
-        ActualizarTableroYNotificar(ficha, tablero, nuevaFila, nuevaColumna);
-        return true;
-    }
-    else
-    {
+        
+        else
+        {
         Console.WriteLine("Movimiento inválido. Esa casilla no es transitable.");
         return false;
+        }
     }
-}
 
     static bool VerificarPuntos(Ficha ficha)
     {
@@ -122,10 +124,11 @@ partial class Program
         return true;
     }
 
+    
     public static void ManejarTrampa(int fila, int columna, Ficha ficha, Casilla[,] tablero, List<(int fila, int columna, Trampa.Tipo tipo)> trampas)
-{
-    if (tablero[fila, columna] == Casilla.Trampa)
     {
+        if (tablero[fila, columna] == Casilla.Trampa)
+        {
         // Encuentra la trampa correspondiente
         var trampa = trampas.FirstOrDefault(t => t.fila == fila && t.columna == columna);
 
@@ -146,8 +149,8 @@ partial class Program
             // Mensaje de depuración
             Console.WriteLine($"Trampa activada en ({fila}, {columna}). Ficha ha perdido puntos. Casilla ahora es Camino.");
         }
+        }
     }
-}
 
 
 

@@ -15,3 +15,4 @@ D:\Elio\Computer Science\Programacion\Proyecto(pdf-datos)\Save2\obj\Debug\net9.0
 D:\Elio\Computer Science\Programacion\Proyecto(pdf-datos)\Save2\obj\Debug\net9.0\Save2.pdb
 D:\Elio\Computer Science\Programacion\Proyecto(pdf-datos)\Save2\obj\Debug\net9.0\Save2.genruntimeconfig.cache
 D:\Elio\Computer Science\Programacion\Proyecto(pdf-datos)\Save2\obj\Debug\net9.0\ref\Save2.dll
+D:\Elio\Computer Science\Programacion\Proyecto(pdf-datos)\Save2\obj\Debug\net9.0\Save2.sourcelink.json

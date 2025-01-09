@@ -8,7 +8,7 @@ public class Ficha
     public int Cooldown { get; internal set; } // Propiedad de enfriamiento
     public int Puntos { get; private set; } // Puntos o vida de la ficha
 
-    public Ficha(string nombre, int fila, int columna, ConsoleColor color, string habilidad, int cooldown = 0, int puntosIniciales = 2)
+    public Ficha(string nombre, int fila, int columna, ConsoleColor color, string habilidad, int cooldown = 0, int puntosIniciales = 4)
     {
         Nombre = nombre;
         Fila = fila;
