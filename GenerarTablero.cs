@@ -32,7 +32,7 @@ public class GenerarTablero
         return (tablero, trampas);
     }
 
-    private static void InicializarTablero(Casilla[,] tablero)
+    public static void InicializarTablero(Casilla[,] tablero)
     {
         for (int fila = 0; fila < tablero.GetLength(0); fila++)
         {
@@ -50,7 +50,7 @@ public class GenerarTablero
         }
     }
 
-  private static void GenerarCamino(Casilla[,] tablero, int fila, int columna, Random random)
+  public static void GenerarCamino(Casilla[,] tablero, int fila, int columna, Random random)
 {
     tablero[fila, columna] = Casilla.Camino; // Marca la posición actual como camino
 

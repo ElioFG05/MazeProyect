@@ -2,22 +2,23 @@
 using Spectre.Console;
 using System.Collections.Generic;
 using System.Linq;
+using Casilla = GenerarTablero.Casilla;
 
 partial class Program
 { 
-    public const int Ancho = 29;
+    public const int Ancho = 34;
     public const int Alto = 27;
-    public const int CantidadTrampas = 15;
+    public const int CantidadTrampas = 35;
     public const int CantidadObstaculos = 200;
 
-    static List<Ficha> fichasSeleccionadas = new(); 
-    static List<Ficha> fichasDisponibles = new() 
+    public static List<Ficha> fichasSeleccionadas = new(); 
+    public static List<Ficha> fichasDisponibles = new() 
     { 
-        new Ficha("Ficha Morada", -1, -1, ConsoleColor.Magenta, "", 2), 
-        new Ficha("Ficha Verde", -1, -1, ConsoleColor.Green, "", 2), 
-        new Ficha("Ficha Azul", -1, -1, ConsoleColor.Blue, "", 2), 
-        new Ficha("Ficha Amarilla", -1, -1, ConsoleColor.Yellow, "", 2),
-        new Ficha("Ficha Negra", -1, -1, ConsoleColor.Black, "s", 2)
+        new Ficha("Ficha Morada", -1, -1, ConsoleColor.Magenta,"Teletransportación Aleatoria", 4), 
+        new Ficha("Ficha Verde", -1, -1, ConsoleColor.Green,"Inmunidad Temporal" , 2), 
+        new Ficha("Ficha Azul", -1, -1, ConsoleColor.Blue, "Paso Fantasma", 2), 
+        new Ficha("Ficha Amarilla", -1, -1, ConsoleColor.Yellow, "Curación Rápida", 2),
+        new Ficha("Ficha Negra", -1, -1, ConsoleColor.Black, "Avance Doble", 2)
     };
 
     static void Main()
@@ -34,43 +35,75 @@ partial class Program
         while (fichasSeleccionadas.Count > 0)
         {
             Console.WriteLine($"\nTurno del Jugador {turnoActual + 1} ({fichasSeleccionadas[turnoActual].Nombre})");
-            Console.WriteLine("Usa las teclas de dirección para mover la ficha.");
-            ConsoleKey teclaPresionada = Console.ReadKey(true).Key;
+    
+            // Menú para seleccionar acción
+            var accion = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+            .Title("Elige tu acción:")
+            .AddChoices(new[] { "Mover Ficha", "Usar Habilidad" }));
 
-            int nuevaFila = fichasSeleccionadas[turnoActual].Fila;
-            int nuevaColumna = fichasSeleccionadas[turnoActual].Columna;
+        if (accion == "Mover Ficha")
+        {
+        Console.WriteLine("Usa las teclas de dirección para mover la ficha.");
+        ConsoleKey teclaPresionada = Console.ReadKey(true).Key;
 
-            switch (teclaPresionada)
-            {
-                case ConsoleKey.UpArrow: nuevaFila--; break;
-                case ConsoleKey.DownArrow: nuevaFila++; break;
-                case ConsoleKey.LeftArrow: nuevaColumna--; break;
-                case ConsoleKey.RightArrow: nuevaColumna++; break;
-                default:
-                    Console.WriteLine("Tecla inválida. Usa las flechas de dirección.");
-                    continue;
-            }
+        int nuevaFila = fichasSeleccionadas[turnoActual].Fila;
+        int nuevaColumna = fichasSeleccionadas[turnoActual].Columna;
 
-            if (MoverFicha(fichasSeleccionadas[turnoActual], nuevaFila, nuevaColumna, tablero, trampas))
-            {
-                TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
-                turnoActual = (turnoActual + 1) % fichasSeleccionadas.Count;
-            }
-            else
-            {
-                Console.WriteLine("Movimiento no permitido. Intenta nuevamente.");
-            }
-
-            if (!VerificarPuntos(fichasSeleccionadas[turnoActual]))
-            {
-                fichasSeleccionadas.RemoveAt(turnoActual);
-                if (turnoActual >= fichasSeleccionadas.Count) 
-                    turnoActual = 0;
-            }
+        switch (teclaPresionada)
+        {
+            case ConsoleKey.UpArrow: nuevaFila--; break;
+            case ConsoleKey.DownArrow: nuevaFila++; break;
+            case ConsoleKey.LeftArrow: nuevaColumna--; break;
+            case ConsoleKey.RightArrow: nuevaColumna++; break;
+            default:
+            Console.WriteLine("Tecla inválida. Usa las flechas de dirección.");
+            continue;
         }
-    }
 
-    static void SeleccionarFichas(Casilla[,] tablero, List<Ficha> fichasSeleccionadas)
+        if (MoverFicha(fichasSeleccionadas[turnoActual], nuevaFila, nuevaColumna, tablero, trampas))
+        {
+            TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
+        }
+        else
+        {
+            Console.WriteLine("Movimiento no permitido. Intenta nuevamente.");
+            continue;
+        }
+        
+        }
+
+        else if (accion == "Usar Habilidad")
+        {
+        Random rndm = new();
+        fichasSeleccionadas[turnoActual].UsarHabilidad(tablero, random, fichasSeleccionadas);
+        }
+
+        // Verificar si la ficha perdió todos los puntos
+        if (!VerificarPuntos(fichasSeleccionadas[turnoActual]))
+        {
+        fichasSeleccionadas.RemoveAt(turnoActual);
+        if (turnoActual >= fichasSeleccionadas.Count)
+        turnoActual = 0;
+        }
+        else
+        {
+        turnoActual = (turnoActual + 1) % fichasSeleccionadas.Count;
+        }
+
+        // Reducir cooldowns al final del turno
+        foreach (var ficha in fichasSeleccionadas)
+        {
+        if (ficha.Cooldown > 0)
+        {
+            ficha.Cooldown--;
+        }
+        }
+}
+
+}
+
+    public static void SeleccionarFichas(Casilla[,] tablero, List<Ficha> fichasSeleccionadas)
     {
         var random = new Random();
         for (int i = 1; i <= 2; i++)
