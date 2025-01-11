@@ -4,39 +4,45 @@ using System.Collections.Generic;
 using System.Linq;
 using Casilla = GenerarTablero.Casilla;
 
-
 partial class Program
-{ 
+{
     public const int Ancho = 34;
-    public const int Alto = 27;
+    public const int Alto = 25;
     public const int CantidadTrampas = 35;
     public const int CantidadObstaculos = 200;
 
-    public static List<Ficha> fichasSeleccionadas = new(); 
-    public static List<Ficha> fichasDisponibles = new() 
-    { 
-        new Ficha("Ficha Morada", -1, -1, ConsoleColor.Magenta,"Teletransportación Aleatoria", 4), 
-        new Ficha("Ficha Verde", -1, -1, ConsoleColor.Green,"Inmunidad Temporal" , 2), 
-        new Ficha("Ficha Azul", -1, -1, ConsoleColor.Blue, "Paso Fantasma", 2), 
+    public static List<Ficha> fichasSeleccionadas = new();
+    public static List<Ficha> fichasDisponibles = new()
+    {
+        new Ficha("Ficha Morada", -1, -1, ConsoleColor.Magenta, "Teletransportación Aleatoria", 4),
+        new Ficha("Ficha Verde", -1, -1, ConsoleColor.Green, "Inmunidad Temporal", 2),
+        new Ficha("Ficha Azul", -1, -1, ConsoleColor.Blue, "Paso Fantasma", 2),
         new Ficha("Ficha Amarilla", -1, -1, ConsoleColor.Yellow, "Curación Rápida", 2),
         new Ficha("Ficha Negra", -1, -1, ConsoleColor.Black, "Avance Doble", 2)
     };
 
-   static void Main()
+    static void Main()
     {
+        // Generar tablero y trampas
         var (tablero, trampas) = Generar(Ancho, Alto, CantidadTrampas, CantidadObstaculos);
         Random random = new();
 
+        // Limpiar la selección de fichas al inicio
         fichasSeleccionadas.Clear();
+
+        // Seleccionar fichas para los jugadores
         SeleccionarFichas(tablero, fichasSeleccionadas);
-       
+
+        // Dibujar el tablero inicial
         TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
+
+        // Inicializar información del juego
         Informacion.Inicializar();
 
         int turnoActual = 0;
+
         while (fichasSeleccionadas.Count > 0)
         {
-            // Mostrar la información actual de las fichas
             Console.Clear();
             TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
             Informacion.MostrarInformacion(fichasSeleccionadas);
@@ -45,8 +51,9 @@ partial class Program
             // Menú para seleccionar acción
             var accion = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("Elige tu acción:")
-                    .AddChoices(new[] { "Mover Ficha", "Usar Habilidad" }));
+                .Title("Elige tu acción:")
+                .AddChoices(new[] { "Mover Ficha", "Usar Habilidad" })
+            );
 
             if (accion == "Mover Ficha")
             {
@@ -63,23 +70,17 @@ partial class Program
                     case ConsoleKey.LeftArrow: nuevaColumna--; break;
                     case ConsoleKey.RightArrow: nuevaColumna++; break;
                     default:
-                        Console.WriteLine("Tecla inválida. Usa las flechas de dirección.");
-                        continue;
+                    Console.WriteLine("Tecla inválida. Usa las flechas de dirección.");
+                    continue;
                 }
-
-                
-
 
                 if (MoverFicha(fichasSeleccionadas[turnoActual], nuevaFila, nuevaColumna, tablero, trampas))
                 {
-                    /*/ Actualizar información después de cada acción
-                    Informacion.MostrarInformacion(fichasSeleccionadas);*/
                     TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
-                   
                 }
                 else
                 {
-                    Console.WriteLine("Movimiento no permitido. Intenta nuevamente.");  
+                    Console.WriteLine("Movimiento no permitido. Intenta nuevamente.");
                     continue;
                 }
             }
@@ -94,7 +95,7 @@ partial class Program
             {
                 fichasSeleccionadas.RemoveAt(turnoActual);
                 if (turnoActual >= fichasSeleccionadas.Count)
-                    turnoActual = 0; // Si el turno actual excede el número de fichas, reiniciarlo
+                turnoActual = 0; // Reiniciar el turno si excede el número de fichas
             }
             else
             {
@@ -109,30 +110,27 @@ partial class Program
                     ficha.Cooldown--;
                 }
 
-                // Verificar si la ficha tiene inmunidad activa
+                // Reducir inmunidad si está activa
                 if (ficha.TurnosInmunidad > 0)
                 {
-                    ficha.TurnosInmunidad--; // Reducir inmunidad solo si está activa
-
-                    // Mostrar mensaje de inmunidad solo después de reducir los turnos
+                    ficha.TurnosInmunidad--;
                     if (ficha.TurnosInmunidad == 0)
                     {
                         Console.WriteLine($"{ficha.Nombre} ya no tiene inmunidad temporal.");
                     }
-                    
                 }
             }
         }
     }
 
-     public static void SeleccionarFichas(Casilla[,] tablero, List<Ficha> fichasSeleccionadas)
+    public static void SeleccionarFichas(Casilla[,] tablero, List<Ficha> fichasSeleccionadas)
     {
         var random = new Random();
         for (int i = 1; i <= 2; i++)
         {
             var fichaElegida = AnsiConsole.Prompt(new SelectionPrompt<Ficha>()
-                .Title($"Jugador {i}, elija su ficha:")
-                .AddChoices(fichasDisponibles));
+            .Title($"Jugador {i}, elija su ficha:")
+            .AddChoices(fichasDisponibles));
 
             fichasDisponibles.Remove(fichaElegida);
 
@@ -145,30 +143,43 @@ partial class Program
         }
     }
 
-
     static bool MoverFicha(Ficha ficha, int nuevaFila, int nuevaColumna, Casilla[,] tablero, List<(int fila, int columna, Trampa.Tipo tipo)> trampas)
+{
+    // Verificar si el movimiento es válido o si la habilidad Paso Fantasma está activa
+    if (EsMovimientoValido(tablero, nuevaFila, nuevaColumna) || ficha.turnosPasoFantasma > 0)
     {
-        if (EsMovimientoValido(tablero, nuevaFila, nuevaColumna))
+        // Mover la ficha a la nueva posición
+        ficha.Mover(nuevaFila, nuevaColumna);
+
+        // Manejar posibles trampas en la nueva posición
+        ManejarTrampa(nuevaFila, nuevaColumna, ficha, tablero, trampas);
+
+        // Verificar los puntos de la ficha después de mover
+        if (!VerificarPuntos(ficha))
         {
-            ficha.Mover(nuevaFila, nuevaColumna);
-        
-            // Llamada a ManejarTrampa con los argumentos correctos
-            ManejarTrampa(nuevaFila, nuevaColumna, ficha, tablero, trampas);
-            
-            if (!VerificarPuntos(ficha))
-            {
             return false;
-            }
-            ActualizarTableroYNotificar(ficha, tablero, nuevaFila, nuevaColumna);
-            return true;
         }
-        
-        else
+
+        // Actualizar el tablero y notificar el movimiento
+        ActualizarTableroYNotificar(ficha, tablero, nuevaFila, nuevaColumna);
+
+        // Reducir el contador de Paso Fantasma si está activo
+        if (ficha.turnosPasoFantasma > 0)
         {
+            ficha.turnosPasoFantasma--;
+            if (ficha.turnosPasoFantasma == 0)
+            {
+                Console.WriteLine($"{ficha.Nombre} ya no puede atravesar obstáculos.");
+            }
+        }
+        return true;
+    }
+    else
+    {
         Console.WriteLine("Movimiento inválido. Esa casilla no es transitable.");
         return false;
-        }
     }
+}
 
     static bool VerificarPuntos(Ficha ficha)
     {
@@ -180,35 +191,30 @@ partial class Program
         return true;
     }
 
-    
     public static void ManejarTrampa(int fila, int columna, Ficha ficha, Casilla[,] tablero, List<(int fila, int columna, Trampa.Tipo tipo)> trampas)
     {
         if (tablero[fila, columna] == Casilla.Trampa)
         {
-        // Encuentra la trampa correspondiente
-        var trampa = trampas.FirstOrDefault(t => t.fila == fila && t.columna == columna);
+            // Encuentra la trampa correspondiente
+            var trampa = trampas.FirstOrDefault(t => t.fila == fila && t.columna == columna);
 
-        // Verificar si la trampa no es la tupla predeterminada
-        if (trampa != default((int fila, int columna, Trampa.Tipo tipo)))
-        {
-            int puntosDeLaTrampa = (int)trampa.tipo;
+            if (trampa != default((int fila, int columna, Trampa.Tipo tipo)))
+            {
+                int puntosDeLaTrampa = (int)trampa.tipo;
 
-            // Aplicar efectos de la trampa a la ficha
-            ficha.PerderPuntos(puntosDeLaTrampa);
+                // Aplicar efectos de la trampa a la ficha
+                ficha.PerderPuntos(puntosDeLaTrampa);
 
-            // Cambiar el estado de la casilla de Trampa a Camino
-            tablero[fila, columna] = Casilla.Camino;
+                // Cambiar el estado de la casilla de Trampa a Camino
+                tablero[fila, columna] = Casilla.Camino;
 
-            // Eliminar la trampa de la lista
-            trampas.Remove(trampa);
+                // Eliminar la trampa de la lista
+                trampas.Remove(trampa);
 
-            // Mensaje de depuración
-            Console.WriteLine($"Trampa activada en ({fila}, {columna}). Ficha ha perdido puntos. Casilla ahora es Camino.");
-        }
+                Console.WriteLine($"Trampa activada en ({fila}, {columna}). Ficha ha perdido puntos. Casilla ahora es Camino.");
+            }
         }
     }
-
-
 
     static bool EsMovimientoValido(Casilla[,] tablero, int fila, int columna)
     {
