@@ -9,8 +9,13 @@ public class Ficha
     public string Habilidad { get; set; }
     public int Cooldown { get; internal set; }
     public int Puntos { get; private set; }
+    public int TurnosInmunidad { get; set; } = 0;
 
-    public Ficha(string nombre, int fila, int columna, ConsoleColor color, string habilidad, int cooldown = 0, int puntosIniciales = 4)
+
+    //Variables de la habilidad InmunidadTemporal
+    private int turnosInmunidad;
+
+    public Ficha(string nombre, int fila, int columna, ConsoleColor color, string habilidad, int cooldown = 0, int puntosIniciales = 1)
     {
         Nombre = nombre;
         Fila = fila;
@@ -27,11 +32,41 @@ public class Ficha
         Columna = nuevaColumna;
     }
 
-    public void PerderPuntos(int puntos)
+   public void PerderPuntos(int puntos)
+{
+    if (TurnosInmunidad > 0)
+    {
+        Console.WriteLine($"{Nombre} es inmune a la pérdida de puntos este turno.");
+    }
+    else
     {
         Puntos -= puntos;
         Console.WriteLine($"¡{Nombre} perdió {puntos} puntos! Puntos restantes: {Puntos}");
     }
+}
+
+
+    public void FinalizarTurno()
+{
+    // Decrementar el contador de inmunidad si es mayor que cero
+    if (turnosInmunidad > 0)
+    {
+        turnosInmunidad--;
+
+        // Notificar cuando la inmunidad termina
+        if (turnosInmunidad == 0)
+        {
+            Console.WriteLine($"{Nombre} ya no es inmune a la pérdida de puntos.");
+        }
+    }
+
+    // Decrementar el cooldown general
+    if (Cooldown > 0)
+    {
+        Cooldown--;
+    }
+}
+
 
     public void UsarHabilidad(Casilla[,] tablero, Random random,List<Ficha> fichasSeleccionadas)
     {
@@ -83,10 +118,22 @@ public class Ficha
 
     }
 
-    private void InmunidadTemporal()
+   private void InmunidadTemporal()
+{
+    if (TurnosInmunidad == 0) // Si la inmunidad no está activa
     {
-        Console.WriteLine($"{Nombre} es inmune a la pérdida de puntos por 1 turno.");
+        TurnosInmunidad = 6; // Activar inmunidad temporal por 3 turnos
+        Console.WriteLine($"{Nombre} ha activado Inmunidad Temporal por 3 turnos.");
     }
+    else
+    {
+        Console.WriteLine($"{Nombre} ya tiene Inmunidad Temporal activa.");
+    }
+}
+
+
+
+
 
     private void PasoFantasma()
     {
