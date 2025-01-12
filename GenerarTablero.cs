@@ -9,7 +9,8 @@ public class GenerarTablero
     {
         Camino,
         Obstaculo,
-        Trampa
+        Trampa,
+        Objeto
     }
 
     // Método principal para generar el tablero con trampas y obstáculos
@@ -126,6 +127,33 @@ public class GenerarTablero
         int tipo = random.Next(Enum.GetValues(typeof(Trampa.Tipo)).Length);
         return (Trampa.Tipo)tipo;
     }
+
+     
+     //Colocar Objetos
+public static void ColocarObjetos(Casilla[,] tablero, int cantidadObjetos, Random random)
+{
+    int objetosColocados = 0;
+
+    while (objetosColocados < cantidadObjetos)
+    {
+        // Generar una posición aleatoria
+        int fila = random.Next(0, tablero.GetLength(0));
+        int columna = random.Next(0, tablero.GetLength(1));
+
+        // Verificar si la casilla está vacía (no tiene obstáculo ni trampa)
+        if (tablero[fila, columna] == Casilla.Camino)
+        {
+            // Colocar el objeto en la casilla
+            tablero[fila, columna] = Casilla.Objeto;
+            objetosColocados++;
+
+            // Mostrar mensaje de colocación
+            Console.WriteLine($"Objeto colocado en ({fila}, {columna}).");
+        }
+    }
+}
+
+
 
     // Obtiene una posición aleatoria dentro del tablero
     public static (int fila, int columna) ObtenerPosicionAleatoria(Casilla[,] tablero, Random random)

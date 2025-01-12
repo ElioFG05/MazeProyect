@@ -10,6 +10,7 @@ partial class Program
     public const int Alto = 25;
     public const int CantidadTrampas = 35;
     public const int CantidadObstaculos = 200;
+    public const int CantidadObjetos = 8;
 
     public static List<Ficha> fichasSeleccionadas = new();
     public static List<Ficha> fichasDisponibles = new()
@@ -32,6 +33,10 @@ partial class Program
 
         // Seleccionar fichas para los jugadores
         SeleccionarFichas(tablero, fichasSeleccionadas);
+        
+        // Colocar objetos en el tablero
+        ColocarObjetos(tablero,CantidadObjetos,random); // Coloca 6 objetos
+
 
         // Dibujar el tablero inicial
         TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
@@ -89,6 +94,13 @@ partial class Program
                 Random rndm = new();
                 fichasSeleccionadas[turnoActual].UsarHabilidad(tablero, random, fichasSeleccionadas);
             }
+            
+            // Verificar si la ficha perdió todos los puntos
+            if (fichasSeleccionadas[turnoActual].Puntos == 0)
+            {
+                Console.WriteLine($"{fichasSeleccionadas[turnoActual].Nombre} ha perdido todos sus puntos. ¡El juego ha terminado!");
+            break; // Sale del bucle y termina el juego
+            }
 
             // Verificar si la ficha perdió todos los puntos
             if (!VerificarPuntos(fichasSeleccionadas[turnoActual]))
@@ -143,17 +155,18 @@ partial class Program
         }
     }
 
-    static bool MoverFicha(Ficha ficha, int nuevaFila, int nuevaColumna, Casilla[,] tablero, List<(int fila, int columna, Trampa.Tipo tipo)> trampas)
+static bool MoverFicha(Ficha ficha, int nuevaFila, int nuevaColumna, Casilla[,] tablero, List<(int fila, int columna, Trampa.Tipo tipo)> trampas)
 {
     // Verificar si el movimiento es válido o si la habilidad Paso Fantasma está activa
     if (EsMovimientoValido(tablero, nuevaFila, nuevaColumna) || ficha.turnosPasoFantasma > 0)
     {
         // Mover la ficha a la nueva posición
-        ficha.Mover(nuevaFila, nuevaColumna);
+        ficha.Mover(nuevaFila, nuevaColumna, tablero);
 
-        // Manejar posibles trampas en la nueva posición
+        // Manejar trampas en la nueva posición
         ManejarTrampa(nuevaFila, nuevaColumna, ficha, tablero, trampas);
 
+        
         // Verificar los puntos de la ficha después de mover
         if (!VerificarPuntos(ficha))
         {
@@ -191,35 +204,57 @@ partial class Program
         return true;
     }
 
-    public static void ManejarTrampa(int fila, int columna, Ficha ficha, Casilla[,] tablero, List<(int fila, int columna, Trampa.Tipo tipo)> trampas)
+  public static void ManejarTrampa(int fila, int columna, Ficha ficha, Casilla[,] tablero, List<(int fila, int columna, Trampa.Tipo tipo)> trampas)
+{
+    if (tablero[fila, columna] == Casilla.Trampa)
     {
-        if (tablero[fila, columna] == Casilla.Trampa)
+        // Encuentra la trampa correspondiente
+        var trampa = trampas.FirstOrDefault(t => t.fila == fila && t.columna == columna);
+
+        if (trampa != default((int fila, int columna, Trampa.Tipo tipo)))
         {
-            // Encuentra la trampa correspondiente
-            var trampa = trampas.FirstOrDefault(t => t.fila == fila && t.columna == columna);
-
-            if (trampa != default((int fila, int columna, Trampa.Tipo tipo)))
+            switch (trampa.tipo)
             {
-                int puntosDeLaTrampa = (int)trampa.tipo;
+                case Trampa.Tipo.Quita1Punto:
+                    ficha.PerderPuntos(1);
+                    Console.WriteLine($"Trampa Quita1Punto activada en ({fila}, {columna}). Ficha {ficha.Nombre} perdió 1 punto.");
+                    Thread.Sleep(4000); // Pausa de 2 segundos
+                    break;
 
-                // Aplicar efectos de la trampa a la ficha
-                ficha.PerderPuntos(puntosDeLaTrampa);
+                case Trampa.Tipo.Quita2Puntos:
+                    ficha.PerderPuntos(2);
+                    Console.WriteLine($"Trampa Quita2Puntos activada en ({fila}, {columna}). Ficha {ficha.Nombre} perdió 2 puntos.");
+                    Thread.Sleep(5000); // Pausa de 2 segundos
+                    break;
 
-                // Cambiar el estado de la casilla de Trampa a Camino
-                tablero[fila, columna] = Casilla.Camino;
+                case Trampa.Tipo.AumentarCooldown:
+                    ficha.AumentarCooldown(5);
+                    Console.WriteLine($"Trampa AumentarCooldown activada en ({fila}, {columna}). Cooldown de {ficha.Nombre} aumentado en 5 turnos.");
+                    Thread.Sleep(4000); // Pausa de 2 segundos
+                    break;
 
-                // Eliminar la trampa de la lista
-                trampas.Remove(trampa);
-
-                Console.WriteLine($"Trampa activada en ({fila}, {columna}). Ficha ha perdido puntos. Casilla ahora es Camino.");
+                // Aquí puedes agregar más tipos de trampas si lo deseas
             }
+
+            // Cambiar el estado de la casilla de Trampa a Camino
+            tablero[fila, columna] = Casilla.Camino;
+
+            // Eliminar la trampa de la lista
+            trampas.Remove(trampa);
+
+            Console.WriteLine($"Casilla en ({fila}, {columna}) ahora es Camino.");
         }
     }
+}
+
 
     static bool EsMovimientoValido(Casilla[,] tablero, int fila, int columna)
-    {
-        return tablero[fila, columna] == Casilla.Camino || tablero[fila, columna] == Casilla.Trampa;
-    }
+{
+    return tablero[fila, columna] == Casilla.Camino || 
+           tablero[fila, columna] == Casilla.Trampa || 
+           tablero[fila, columna] == Casilla.Objeto; // Permitir movimiento a objetos
+}
+
 
     static void ActualizarTableroYNotificar(Ficha ficha, Casilla[,] tablero, int fila, int columna)
     {

@@ -13,7 +13,7 @@ public class Informacion
             .Border(TableBorder.Rounded)
             .Title("Información de Fichas")
             .AddColumn("Nombre")
-            .AddColumn("Puntos")
+            .AddColumn("Vida (%)") // Cambiar el encabezado a "Vida (%)"
             .AddColumn("Habilidad")
             .AddColumn("Cooldown");
     }
@@ -26,10 +26,13 @@ public class Informacion
 
         foreach (var ficha in fichas)
         {
+            // Calcula el porcentaje de vida basado en los puntos actuales
+            int porcentajeVida = ficha.Puntos * 10; // Suponiendo que 10 puntos = 100%
+
             // Agrega una nueva fila con la información de cada ficha
             tablaInformacion.AddRow(
                 ficha.Nombre,
-                ficha.Puntos.ToString(),
+                $"{porcentajeVida}%", // Mostrar la vida como porcentaje
                 ficha.Habilidad,
                 ficha.Cooldown > 0 ? ficha.Cooldown.ToString() : "Listo");
         }

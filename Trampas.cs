@@ -4,7 +4,7 @@ public class Trampa(Trampa.Tipo tipo)
     {
         Quita1Punto,
         Quita2Puntos,
-        RetrocedeAlLugar // Otro tipo de trampa
+        AumentarCooldown // Otro tipo de trampa
     }
 
     public  Tipo TipoDeTrampa { get; set; } = tipo;
@@ -14,12 +14,17 @@ public class Trampa(Trampa.Tipo tipo)
         switch (TipoDeTrampa)
         {
             case Tipo.Quita1Punto:
-                ficha.PerderPuntos(1); // Llama a PerderPuntos para restar 1 punto
-                break;
+            ficha.PerderPuntos(1); // Llama a PerderPuntos para restar 1 punto
+            break;
             case Tipo.Quita2Puntos:
-                ficha.PerderPuntos(2); // Llama a PerderPuntos para restar 2 puntos
-                break;
-            // Aquí puedes agregar más tipos de trampas si lo deseas
+            ficha.PerderPuntos(2); // Llama a PerderPuntos para restar 2 puntos
+            break;
+            case Tipo.AumentarCooldown:
+            Console.WriteLine($"Trampa AumentarCooldown activada en {ficha.Nombre}. Cooldown antes: {ficha.Cooldown}");
+            ficha.AumentarCooldown(5);
+            Console.WriteLine($"Cooldown después: {ficha.Cooldown}");
+           break;
+
         }
     }
 }

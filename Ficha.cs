@@ -8,12 +8,14 @@ public class Ficha
     public ConsoleColor Color { get; set; }  // Color de la ficha
     public string Habilidad { get; set; }    // Habilidad especial de la ficha
     public int Cooldown { get;  set; }  // Turnos restantes para reutilizar la habilidad
-    public int Puntos { get; set; }    // Puntos actuales de la ficha
+    public int Puntos { get;private set; }    // Puntos actuales de la ficha
     public int TurnosInmunidad { get;  set; } = 0;  // Turnos restantes de inmunidad
     public int turnosPasoFantasma;  // Contador para la habilidad Paso Fantasma
 
+    public int ObjetosRecogidos { get; private set; }  // Nueva propiedad para contar objetos recogidos
+
     // Constructor para inicializar una ficha
-    public Ficha(string nombre, int fila, int columna, ConsoleColor color, string habilidad, int cooldown = 0, int puntosIniciales = 1)
+    public Ficha(string nombre, int fila, int columna, ConsoleColor color, string habilidad, int cooldown = 0, int puntosIniciales = 2)
     {
         Nombre = nombre;
         Fila = fila;
@@ -22,55 +24,112 @@ public class Ficha
         Habilidad = habilidad;
         Cooldown = cooldown;
         Puntos = puntosIniciales;
+        ObjetosRecogidos = 0; // Inicializar en 0
+    }
+    public void RecogerObjeto()
+    {
+    ObjetosRecogidos++;
+    Console.WriteLine($"{Nombre} ha recogido un objeto! Total objetos recogidos: {ObjetosRecogidos}");
+    //Condicion de ganar
+    if (ObjetosRecogidos >= 3)
+    {
+        Console.WriteLine($"{Nombre} ha ganado al recoger 3 objetos!");
+        // Aquí puedes agregar la lógica para terminar el juego
+        Environment.Exit(0); // Termina el programa
     }
 
-        // Mueve la ficha a una nueva posición, permitiendo atravesar obstáculos con "Paso Fantasma"
+    }
+
+    // Mueve la ficha a una nueva posición, permitiendo atravesar obstáculos con "Paso Fantasma"
     public bool Mover(int nuevaFila, int nuevaColumna, Casilla[,] tablero)
     {
-        // Verificar si la casilla es un obstáculo
-        Casilla casillaDestino = tablero[nuevaFila, nuevaColumna];
+    // Verificar si la casilla es un obstáculo
+    Casilla casillaDestino = tablero[nuevaFila, nuevaColumna];
 
-        // Si la ficha tiene la habilidad "Paso Fantasma", podrá atravesar obstáculos
-        if (turnosPasoFantasma > 0 && casillaDestino == Casilla.Obstaculo)
-        {
-            Console.WriteLine($"{Nombre} atraviesa un obstáculo debido a la habilidad Paso Fantasma.");
-            Fila = nuevaFila;
-            Columna = nuevaColumna;
-            return true; // El movimiento fue exitoso
-        }
-
-        // Si no tiene la habilidad o no es un obstáculo, comprobar si la casilla es libre
-        if (casillaDestino != Casilla.Obstaculo)
-        {
-            Fila = nuevaFila;
-            Columna = nuevaColumna;
-            return true; // El movimiento fue exitoso
-        }
-
-        Console.WriteLine($"{Nombre} no puede moverse a una casilla con obstáculo.");
-        return false; // Movimiento no permitido
+    // Si la ficha tiene la habilidad "Paso Fantasma", podrá atravesar obstáculos
+    if (turnosPasoFantasma > 0 && casillaDestino == Casilla.Obstaculo)
+    {
+        Console.WriteLine($"{Nombre} atraviesa un obstáculo debido a la habilidad Paso Fantasma.");
+        Fila = nuevaFila;
+        Columna = nuevaColumna;
     }
-
-    // Mueve la ficha a una nueva posición
-    public void Mover(int nuevaFila, int nuevaColumna)
+    else if (casillaDestino != Casilla.Obstaculo) // Si no es obstáculo, moverse normalmente
     {
         Fila = nuevaFila;
         Columna = nuevaColumna;
     }
+    else
+    {
+        Console.WriteLine($"{Nombre} no puede moverse a una casilla con obstáculo.");
+        return false; // Movimiento no permitido
+    }
+
+    // Verificar si ha recogido un objeto después de moverse
+    if (tablero[Fila, Columna] == Casilla.Objeto)
+    {
+        RecogerObjeto(); // Incrementa el contador de objetos recogidos
+        tablero[Fila, Columna] = Casilla.Camino; // Elimina el objeto del tablero
+        Console.WriteLine($"{Nombre} ha recogido un objeto! Total objetos recogidos: {ObjetosRecogidos}");
+    }
+
+    return true; // El movimiento fue exitoso
+    }
+
+
+   
+
+
+    //Metodo para incrementar por cada objeto recogido
+    
+     // Método para incrementar el contador de objetos recogidos
+   
+
+    /*// Mueve la ficha a una nueva posición
+    public void Mover(int nuevaFila, int nuevaColumna)
+    {
+        Fila = nuevaFila;
+        Columna = nuevaColumna;
+    }*/
 
     // Reduce puntos de la ficha, si no está en inmunidad
-    public void PerderPuntos(int puntos)
+  public bool PerderPuntos(int puntos)
+{
+    if (TurnosInmunidad > 0)
     {
-        if (TurnosInmunidad > 0)
+        Console.WriteLine($"{Nombre} es inmune a la pérdida de puntos este turno.");
+    }
+    else
+    {
+        Puntos -= puntos;
+        if (Puntos < 0) Puntos = 0; // Asegurarse de que los puntos no sean negativos
+        MostrarVida();
+
+        if (Puntos == 0)
         {
-            Console.WriteLine($"{Nombre} es inmune a la pérdida de puntos este turno.");
-        }
-        else
-        {
-            Puntos -= puntos;
-            Console.WriteLine($"¡{Nombre} perdió {puntos} puntos! Puntos restantes: {Puntos}");
+            // Notificación cuando la ficha pierde todos sus puntos
+            Console.WriteLine($"¡{Nombre} ha perdido todos sus puntos! El juego ha terminado.");
+            return true; // Indica que el juego debe detenerse
         }
     }
+
+    return false; // El juego continúa si no se ha perdido
+}
+
+
+    public void MostrarVida()
+    {
+        int porcentajeVida = Puntos * 10; // Escala a porcentaje (10 puntos = 100%)
+        Console.WriteLine($"[{Nombre}] Vida actual: {porcentajeVida}%");
+    }
+
+        public void AumentarCooldown(int turnos)
+    {
+        Cooldown += turnos;
+    }
+
+
+
+
     // Finaliza el turno de la ficha, gestionando la inmunidad, cooldown y Paso Fantasma
     public void FinalizarTurno()
     {
@@ -115,23 +174,23 @@ public class Ficha
         {
             case "Teletransportación Aleatoria":
                 TeletransportarAleatoriamente(tablero, random, fichasSeleccionadas);
-                Cooldown = 3;  // Establece cooldown de 3 turnos
+                Cooldown = 6;  // Establece cooldown de 3 turnos
                 break;
             case "Inmunidad Temporal":
                 InmunidadTemporal();
-                Cooldown = 2;  // Establece cooldown de 2 turnos
+                Cooldown = 4;  // Establece cooldown de 2 turnos
                 break;
             case "Paso Fantasma":
                 PasoFantasma();
-                Cooldown = 4;  // Establece cooldown de 4 turnos
+                Cooldown = 6;  // Establece cooldown de 4 turnos
                 break;
             case "Curación Rápida":
                 Curar();
-                Cooldown = 3;  // Establece cooldown de 3 turnos
+                Cooldown = 6;  // Establece cooldown de 3 turnos
                 break;
             case "Avance Doble":
                 AvanceDoble(tablero, fichasSeleccionadas);
-                Cooldown = 2;  // Establece cooldown de 2 turnos
+                Cooldown = 6;  // Establece cooldown de 2 turnos
                 break;
             default:
                 Console.WriteLine("Habilidad no reconocida.");
@@ -148,7 +207,7 @@ public class Ficha
             fila = random.Next(tablero.GetLength(0));
             columna = random.Next(tablero.GetLength(1));
         } while (tablero[fila, columna] != Casilla.Camino);  // Busca una casilla válida
-        Mover(fila, columna);
+        Mover(fila, columna,tablero);
         Console.WriteLine($"{Nombre} se teletransportó a la posición ({fila}, {columna}).");
         TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
     }
@@ -215,7 +274,7 @@ public class Ficha
 
             if (IsMovimientoValido(nuevaFila, nuevaColumna, tablero))
             {
-                Mover(nuevaFila, nuevaColumna);
+                Mover(nuevaFila, nuevaColumna,tablero);
                 Console.WriteLine($"{Nombre} se ha movido a la posición ({nuevaFila}, {nuevaColumna}).");
                 TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
             }

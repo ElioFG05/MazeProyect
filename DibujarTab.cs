@@ -20,10 +20,12 @@ public class TableroDrawer
             {
                 Color color = tablero[fila, columna] switch
                 {
-                    Casilla.Camino => Color.Grey,
+                    Casilla.Camino => Color.Black,
                     Casilla.Obstaculo => Color.White,
-                    Casilla.Trampa => Color.Red, // Las trampas se dibujan en color rojo
-                    _ => Color.White
+                    Casilla.Trampa => Color.Red,
+                    Casilla.Objeto => Color.Green, // Los objetos se dibujan en color verde
+                    _=> Color.White // Las trampas se dibujan en color rojo
+                   
                 };
 
                 canvas.SetPixel(columna, fila, color); // Establecer el color del píxel en el canvas
