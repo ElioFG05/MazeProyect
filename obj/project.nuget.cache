@@ -1,10 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "xhrU+Kn/QsQ=",
+  "dgSpecHash": "Syx/p/zYUjc=",
   "success": true,
   "projectFilePath": "D:\\Elio\\Computer Science\\Programacion\\Proyecto(pdf-datos)\\Save2\\Save2.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Elio\\.nuget\\packages\\spectre.console\\0.49.1\\spectre.console.0.49.1.nupkg.sha512"
+    "C:\\Users\\Elio\\.nuget\\packages\\sixlabors.imagesharp\\3.1.4\\sixlabors.imagesharp.3.1.4.nupkg.sha512",
+    "C:\\Users\\Elio\\.nuget\\packages\\spectre.console\\0.49.1\\spectre.console.0.49.1.nupkg.sha512",
+    "C:\\Users\\Elio\\.nuget\\packages\\spectre.console.imagesharp\\0.49.1\\spectre.console.imagesharp.0.49.1.nupkg.sha512"
   ],
   "logs": []
 }

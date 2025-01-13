@@ -49,6 +49,10 @@
             "Spectre.Console": {
               "target": "Package",
               "version": "[0.49.1, )"
+            },
+            "Spectre.Console.ImageSharp": {
+              "target": "Package",
+              "version": "[0.49.1, )"
             }
           },
           "imports": [

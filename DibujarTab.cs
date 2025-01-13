@@ -1,6 +1,4 @@
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
 using static GenerarTablero;
 public class TableroDrawer
 {
@@ -21,10 +19,10 @@ public class TableroDrawer
                 Color color = tablero[fila, columna] switch
                 {
                     Casilla.Camino => Color.Black,
-                    Casilla.Obstaculo => Color.White,
+                    Casilla.Obstaculo => Color.Grey,
                     Casilla.Trampa => Color.Red,
-                    Casilla.Objeto => Color.Green, // Los objetos se dibujan en color verde
-                    _=> Color.White // Las trampas se dibujan en color rojo
+                    Casilla.Objeto => Color.Wheat1, // Los objetos se dibujan en color verde
+                    _=> Color.Grey // Las trampas se dibujan en color rojo
                    
                 };
 

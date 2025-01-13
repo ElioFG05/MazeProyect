@@ -27,4 +27,5 @@ public class Trampa(Trampa.Tipo tipo)
 
         }
     }
+        
 }

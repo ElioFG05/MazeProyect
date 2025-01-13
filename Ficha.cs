@@ -15,7 +15,7 @@ public class Ficha
     public int ObjetosRecogidos { get; private set; }  // Nueva propiedad para contar objetos recogidos
 
     // Constructor para inicializar una ficha
-    public Ficha(string nombre, int fila, int columna, ConsoleColor color, string habilidad, int cooldown = 0, int puntosIniciales = 2)
+    public Ficha(string nombre, int fila, int columna, ConsoleColor color, string habilidad, int cooldown = 0, int puntosIniciales = 5)
     {
         Nombre = nombre;
         Fila = fila;
@@ -75,6 +75,26 @@ public class Ficha
     return true; // El movimiento fue exitoso
     }
 
+    public void FinalizarTurno(Ficha ficha)
+{
+    if (ficha.Cooldown > 0)
+    {
+        ficha.Cooldown--;
+    }
+
+    if (ficha.TurnosInmunidad > 0)
+    {
+        ficha.TurnosInmunidad--;
+        if (ficha.TurnosInmunidad == 0)
+        {
+            Console.WriteLine($"{ficha.Nombre} ya no tiene inmunidad temporal.");
+        }
+    }
+
+    // Otras lógicas de finalización de turno pueden ir aquí
+}
+
+
 
    
 
@@ -108,6 +128,12 @@ public class Ficha
         {
             // Notificación cuando la ficha pierde todos sus puntos
             Console.WriteLine($"¡{Nombre} ha perdido todos sus puntos! El juego ha terminado.");
+            Thread.Sleep(3000); // Pausa de 3 segundos
+            Environment.Exit(0); // Termina el programa
+    
+
+        
+
             return true; // Indica que el juego debe detenerse
         }
     }
@@ -126,9 +152,6 @@ public class Ficha
     {
         Cooldown += turnos;
     }
-
-
-
 
     // Finaliza el turno de la ficha, gestionando la inmunidad, cooldown y Paso Fantasma
     public void FinalizarTurno()
@@ -158,9 +181,6 @@ public class Ficha
         }
     }
 
-
-    
-
     // Usa la habilidad especial de la ficha, si no está en cooldown
     public void UsarHabilidad(Casilla[,] tablero, Random random, List<Ficha> fichasSeleccionadas)
     {
@@ -174,23 +194,23 @@ public class Ficha
         {
             case "Teletransportación Aleatoria":
                 TeletransportarAleatoriamente(tablero, random, fichasSeleccionadas);
-                Cooldown = 6;  // Establece cooldown de 3 turnos
+                 Cooldown = 4;
                 break;
             case "Inmunidad Temporal":
                 InmunidadTemporal();
-                Cooldown = 4;  // Establece cooldown de 2 turnos
+                 Cooldown = 3;
                 break;
             case "Paso Fantasma":
                 PasoFantasma();
-                Cooldown = 6;  // Establece cooldown de 4 turnos
+                 Cooldown = 3;
                 break;
             case "Curación Rápida":
                 Curar();
-                Cooldown = 6;  // Establece cooldown de 3 turnos
+                 Cooldown = 3;
                 break;
-            case "Avance Doble":
-                AvanceDoble(tablero, fichasSeleccionadas);
-                Cooldown = 6;  // Establece cooldown de 2 turnos
+            case "Avance Triple":
+                AvanceTriple(tablero, fichasSeleccionadas);
+                 Cooldown = 3;
                 break;
             default:
                 Console.WriteLine("Habilidad no reconocida.");
@@ -202,6 +222,7 @@ public class Ficha
     private void TeletransportarAleatoriamente(Casilla[,] tablero, Random random, List<Ficha> fichasSeleccionadas)
     {
         int fila, columna;
+
         do
         {
             fila = random.Next(tablero.GetLength(0));
@@ -209,6 +230,7 @@ public class Ficha
         } while (tablero[fila, columna] != Casilla.Camino);  // Busca una casilla válida
         Mover(fila, columna,tablero);
         Console.WriteLine($"{Nombre} se teletransportó a la posición ({fila}, {columna}).");
+        Thread.Sleep(3000); // Pausa de 3 segundos
         TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
     }
 
@@ -219,6 +241,7 @@ public class Ficha
         {
             TurnosInmunidad = 6;  // Activar inmunidad por 6 turnos
             Console.WriteLine($"{Nombre} ha activado Inmunidad Temporal por 3 turnos.");
+            Thread.Sleep(3000); // Pausa de 3 segundos
         }
         else
         {
@@ -231,6 +254,7 @@ public class Ficha
     {
         turnosPasoFantasma = 4;  // La habilidad dura 2 turnos
         Console.WriteLine($"{Nombre} puede atravesar obstáculos por 2 turnos.");
+        Thread.Sleep(3000); // Pausa de 3 segundos
     }
 
     // Método para comprobar si la ficha puede atravesar un obstáculo
@@ -245,12 +269,14 @@ public class Ficha
         Puntos += 2;
         if (Puntos > 4) Puntos = 4;  // Asegura que los puntos no excedan 4
         Console.WriteLine($"{Nombre} se ha curado. Puntos actuales: {Puntos}");
+        Thread.Sleep(3000); // Pausa de 3 segundos
     }
 
     // Permite a la ficha moverse dos veces en un turno
-    public void AvanceDoble(Casilla[,] tablero, List<Ficha> fichasSeleccionadas)
+    public void AvanceTriple(Casilla[,] tablero, List<Ficha> fichasSeleccionadas)
     {
-        Console.WriteLine($"{Nombre} puede moverse dos veces este turno.");
+        Console.WriteLine($"{Nombre} Puede moverse 2 veces seguidas y luego otravez al presionar `Mover Ficha`");
+        Thread.Sleep(3000); // Pausa de 3 segundos
 
         for (int i = 0; i < 2; i++)
         {
