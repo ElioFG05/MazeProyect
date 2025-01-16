@@ -24,8 +24,8 @@ public class GenerarTablero
 
         if (!HayCaminosConectados(tablero)) // Verifica que los caminos estén conectados
         {
-            Console.WriteLine("Error: Los caminos no están completamente conectados.");
-            return (tablero, new List<(int, int, Trampa.Tipo)>());
+        Console.WriteLine("Error: Los caminos no están completamente conectados.");
+        return (tablero, new List<(int, int, Trampa.Tipo)>());
         }
 
         ColocarObstaculos(tablero, cantidadObstaculos, random);

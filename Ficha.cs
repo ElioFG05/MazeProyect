@@ -41,39 +41,44 @@ public class Ficha
     }
 
     // Mueve la ficha a una nueva posición, permitiendo atravesar obstáculos con "Paso Fantasma"
-    public bool Mover(int nuevaFila, int nuevaColumna, Casilla[,] tablero)
-    {
+  public bool Mover(int nuevaFila, int nuevaColumna, Casilla[,] tablero)
+{
     // Verificar si la casilla es un obstáculo
     Casilla casillaDestino = tablero[nuevaFila, nuevaColumna];
 
     // Si la ficha tiene la habilidad "Paso Fantasma", podrá atravesar obstáculos
     if (turnosPasoFantasma > 0 && casillaDestino == Casilla.Obstaculo)
     {
-        Console.WriteLine($"{Nombre} atraviesa un obstáculo debido a la habilidad Paso Fantasma.");
-        Fila = nuevaFila;
-        Columna = nuevaColumna;
+        // Verificar si la casilla no está en el borde
+        bool esBorde = nuevaFila == 0 || nuevaFila == tablero.GetLength(0) - 1 || nuevaColumna == 0 || nuevaColumna == tablero.GetLength(1) - 1;
+
+        if (!esBorde) 
+        {
+            Console.WriteLine($"{Nombre} atraviesa un obstáculo debido a la habilidad Paso Fantasma.");
+            Fila = nuevaFila;
+            Columna = nuevaColumna;
+            return true;
+        }
+        else
+        {
+            Console.WriteLine($"{Nombre} no puede atravesar un obstáculo en el borde.");
+            return false;
+        }
     }
-    else if (casillaDestino != Casilla.Obstaculo) // Si no es obstáculo, moverse normalmente
+    // Si no es obstáculo, moverse normalmente
+    else if (casillaDestino != Casilla.Obstaculo) 
     {
         Fila = nuevaFila;
         Columna = nuevaColumna;
+        return true;
     }
     else
     {
         Console.WriteLine($"{Nombre} no puede moverse a una casilla con obstáculo.");
         return false; // Movimiento no permitido
     }
+}
 
-    // Verificar si ha recogido un objeto después de moverse
-    if (tablero[Fila, Columna] == Casilla.Objeto)
-    {
-        RecogerObjeto(); // Incrementa el contador de objetos recogidos
-        tablero[Fila, Columna] = Casilla.Camino; // Elimina el objeto del tablero
-        Console.WriteLine($"{Nombre} ha recogido un objeto! Total objetos recogidos: {ObjetosRecogidos}");
-    }
-
-    return true; // El movimiento fue exitoso
-    }
 
     public void FinalizarTurno(Ficha ficha)
 {
@@ -97,21 +102,6 @@ public class Ficha
 
 
    
-
-
-    //Metodo para incrementar por cada objeto recogido
-    
-     // Método para incrementar el contador de objetos recogidos
-   
-
-    /*// Mueve la ficha a una nueva posición
-    public void Mover(int nuevaFila, int nuevaColumna)
-    {
-        Fila = nuevaFila;
-        Columna = nuevaColumna;
-    }*/
-
-    // Reduce puntos de la ficha, si no está en inmunidad
   public bool PerderPuntos(int puntos)
 {
     if (TurnosInmunidad > 0)
@@ -201,12 +191,24 @@ public class Ficha
                  Cooldown = 3;
                 break;
             case "Paso Fantasma":
-                PasoFantasma();
-                 Cooldown = 3;
-                break;
+    if (turnosPasoFantasma <= 0)
+    {
+        turnosPasoFantasma = 3; // Establecer los turnos de Paso Fantasma
+        Console.WriteLine($"{Nombre} ha activado 'Paso Fantasma' y podrá atravesar obstáculos durante {turnosPasoFantasma} turnos.");
+    }
+    else
+    {
+        Console.WriteLine($"{Nombre} ya tiene activa la habilidad 'Paso Fantasma'.");
+    }
+    Cooldown = 3; // Establecer el tiempo de enfriamiento para la habilidad
+    break;
+
+            
+    
             case "Curación Rápida":
                 Curar();
                  Cooldown = 3;
+                 turnosPasoFantasma = 3;
                 break;
             case "Avance Triple":
                 AvanceTriple(tablero, fichasSeleccionadas);
@@ -249,19 +251,30 @@ public class Ficha
         }
     }
 
-    // Permite a la ficha atravesar obstáculos durante 2 turnos
-   private void PasoFantasma()
+
+
+    // Permite a la ficha atravesar obstáculos durante 2 turnos// Método para comprobar si la ficha puede atravesar un obstáculo
+  public bool PasoFantasma(Casilla casilla, int fila, int columna, int totalFilas, int totalColumnas)
+{
+    // Verificar si la casilla está en el borde del tablero
+    bool esBorde = fila == 0 || fila == totalFilas - 1 || columna == 0 || columna == totalColumnas - 1;
+
+    if (esBorde)
     {
-        turnosPasoFantasma = 4;  // La habilidad dura 2 turnos
-        Console.WriteLine($"{Nombre} puede atravesar obstáculos por 2 turnos.");
-        Thread.Sleep(3000); // Pausa de 3 segundos
+        Console.WriteLine($"{Nombre} está intentando atravesar un obstáculo en el borde del tablero.");
+        Thread.Sleep(3000); 
+        return false;
     }
 
-    // Método para comprobar si la ficha puede atravesar un obstáculo
-    public bool PuedeAtravesarObstaculo(Casilla casilla)
-    {
-        return turnosPasoFantasma > 0 && casilla == Casilla.Obstaculo;
-    }
+    // Permitir atravesar obstáculos si no están en los bordes y la habilidad está activa
+    return turnosPasoFantasma > 0 && casilla == Casilla.Obstaculo;
+}
+
+
+
+
+
+
 
     // Incrementa los puntos de la ficha, hasta un máximo de 4
     private void Curar()

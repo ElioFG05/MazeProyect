@@ -64,47 +64,96 @@ partial class Program
                 .AddChoices(new[] { "Mover Ficha", "Usar Habilidad" })
             );
 
-            if (accion == "Mover Ficha")
-            {
-                Console.WriteLine("Usa las teclas de dirección para mover la ficha.");
-                ConsoleKey teclaPresionada = Console.ReadKey(true).Key;
+if (accion == "Mover Ficha")
+{
+    Console.WriteLine("Usa las teclas de dirección para mover la ficha una casilla.");
+    ConsoleKey primeraTeclaPresionada = Console.ReadKey(true).Key;
 
-                int nuevaFila = fichasSeleccionadas[turnoActual].Fila;
-                int nuevaColumna = fichasSeleccionadas[turnoActual].Columna;
+    int nuevaFila = fichasSeleccionadas[turnoActual].Fila;
+    int nuevaColumna = fichasSeleccionadas[turnoActual].Columna;
+    int filaDelta = 0, columnaDelta = 0;
 
-                switch (teclaPresionada)
-                {
-                    case ConsoleKey.UpArrow: nuevaFila--; break;
-                    case ConsoleKey.DownArrow: nuevaFila++; break;
-                    case ConsoleKey.LeftArrow: nuevaColumna--; break;
-                    case ConsoleKey.RightArrow: nuevaColumna++; break;
-                    default:
-                    Console.WriteLine("Tecla inválida. Usa las flechas de dirección.");
-                    continue;
-                }
+    // Primer movimiento
+    switch (primeraTeclaPresionada)
+    {
+        case ConsoleKey.UpArrow: filaDelta = -1; break;
+        case ConsoleKey.DownArrow: filaDelta = 1; break;
+        case ConsoleKey.LeftArrow: columnaDelta = -1; break;
+        case ConsoleKey.RightArrow: columnaDelta = 1; break;
+        default:
+            Console.WriteLine("Tecla inválida. Usa las flechas de dirección.");
+            continue;
+    }
 
-                if (MoverFicha(fichasSeleccionadas[turnoActual], nuevaFila, nuevaColumna, tablero, trampas))
-                {
-                    TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
-                    fichasSeleccionadas[turnoActual].FinalizarTurno();
-                    turnoActual = (turnoActual + 1) % fichasSeleccionadas.Count; // Avanzar al siguiente turno*/
-                     
-                     
-                }
-                else
-                {
-                    Console.WriteLine("Movimiento no permitido. Intenta nuevamente.");
-                    continue;
-                    
-                }
-               
-            }
+    int primeraFila = nuevaFila + filaDelta;
+    int primeraColumna = nuevaColumna + columnaDelta;
+
+    if (MoverFicha(fichasSeleccionadas[turnoActual], primeraFila, primeraColumna, tablero, trampas))
+    {
+        nuevaFila = primeraFila;
+        nuevaColumna = primeraColumna;
+
+        TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
+
+        Console.WriteLine("Usa las teclas de dirección para mover la ficha una casilla más.");
+        ConsoleKey segundaTeclaPresionada = Console.ReadKey(true).Key;
+        
+        filaDelta = 0;
+        columnaDelta = 0;
+
+        // Segundo movimiento
+        switch (segundaTeclaPresionada)
+        {
+            case ConsoleKey.UpArrow: filaDelta = -1; break;
+            case ConsoleKey.DownArrow: filaDelta = 1; break;
+            case ConsoleKey.LeftArrow: columnaDelta = -1; break;
+            case ConsoleKey.RightArrow: columnaDelta = 1; break;
+            default:
+                Console.WriteLine("Tecla inválida. Usa las flechas de dirección.");
+                continue;
+        }
+
+        int segundaFila = nuevaFila + filaDelta;
+        int segundaColumna = nuevaColumna + columnaDelta;
+
+        if (MoverFicha(fichasSeleccionadas[turnoActual], segundaFila, segundaColumna, tablero, trampas))
+        {
+            nuevaFila = segundaFila;
+            nuevaColumna = segundaColumna;
+        }
+        else
+        {
+            Console.WriteLine("Movimiento no permitido en el segundo paso.");
+            Thread.Sleep(3000); 
+
+
+        }
+    }
+    else
+    {
+        Console.WriteLine("Movimiento no permitido en el primer paso.");
+        Thread.Sleep(3000); 
+    }
+
+    TableroDrawer.DibujarTablero(tablero, fichasSeleccionadas);
+    fichasSeleccionadas[turnoActual].FinalizarTurno();
+    turnoActual = (turnoActual + 1) % fichasSeleccionadas.Count; // Avanzar al siguiente turno
+
+    
+}
+
+
+
             else if (accion == "Usar Habilidad")
-            {
-                Random rndm = new();
-                fichasSeleccionadas[turnoActual].UsarHabilidad(tablero, random, fichasSeleccionadas);
-                /*turnoActual = (turnoActual + 1) % fichasSeleccionadas.Count;*/
-            }
+{
+    if (fichasSeleccionadas[turnoActual].Habilidad == "Paso Fantasma")
+    {
+        Console.WriteLine($"{fichasSeleccionadas[turnoActual].Nombre} ha activado la habilidad 'Paso Fantasma' y podrá atravesar obstáculos durante este turno.");
+    }
+    Random rndm = new();
+    fichasSeleccionadas[turnoActual].UsarHabilidad(tablero, random, fichasSeleccionadas);
+}
+
             
             // Verificar si la ficha perdió todos los puntos
             if (fichasSeleccionadas[turnoActual].Puntos == 0)
@@ -121,10 +170,7 @@ partial class Program
                 turnoActual = 0; // Reiniciar el turno si excede el número de fichas
                 
             }
-            /*else
-            {
-                turnoActual = (turnoActual + 1) % fichasSeleccionadas.Count;
-            }*/
+            
 
             foreach (var ficha in fichasSeleccionadas)
             {
@@ -174,12 +220,10 @@ partial class Program
         AnsiConsole.MarkupLine($"[bold]{fichaElegida.Nombre}[/] con la habilidad [italic]{fichaElegida.Habilidad}[/] fue seleccionada por Jugador {i} y colocada en ({posicion.Item1}, {posicion.Item2}).");
     }
 }
-
-
-static bool MoverFicha(Ficha ficha, int nuevaFila, int nuevaColumna, Casilla[,] tablero, List<(int fila, int columna, Trampa.Tipo tipo)> trampas)
+static bool MoverFicha(Ficha ficha, int nuevaFila, int nuevaColumna, Casilla[,] tablero, List<(int fila, int columna, Trampa.Tipo tipo)> trampas) 
 {
-    // Verificar si el movimiento es válido o si la habilidad Paso Fantasma está activa
-    if (EsMovimientoValido(tablero, nuevaFila, nuevaColumna) || ficha.turnosPasoFantasma > 0)
+    // Verificar si el movimiento es válido
+    if (EsMovimientoValido(tablero, nuevaFila, nuevaColumna, ficha))
     {
         // Mover la ficha a la nueva posición
         ficha.Mover(nuevaFila, nuevaColumna, tablero);
@@ -187,7 +231,14 @@ static bool MoverFicha(Ficha ficha, int nuevaFila, int nuevaColumna, Casilla[,] 
         // Manejar trampas en la nueva posición
         ManejarTrampa(nuevaFila, nuevaColumna, ficha, tablero, trampas);
 
-        
+        // Verificar si hay un objeto en la nueva posición
+        if (tablero[nuevaFila, nuevaColumna] == Casilla.Objeto)
+        {
+            ficha.RecogerObjeto(); // Llama al método para recoger el objeto
+            // Aquí puedes marcar la casilla como vacía o eliminar el objeto del tablero
+            tablero[nuevaFila, nuevaColumna] = Casilla.Camino; // Cambia a casilla vacía
+        }
+
         // Verificar los puntos de la ficha después de mover
         if (!VerificarPuntos(ficha))
         {
@@ -196,7 +247,7 @@ static bool MoverFicha(Ficha ficha, int nuevaFila, int nuevaColumna, Casilla[,] 
 
         // Actualizar el tablero y notificar el movimiento
         ActualizarTableroYNotificar(ficha, tablero, nuevaFila, nuevaColumna);
-
+        
         // Reducir el contador de Paso Fantasma si está activo
         if (ficha.turnosPasoFantasma > 0)
         {
@@ -268,13 +319,40 @@ static bool MoverFicha(Ficha ficha, int nuevaFila, int nuevaColumna, Casilla[,] 
     }
 }
 
-
-    static bool EsMovimientoValido(Casilla[,] tablero, int fila, int columna)
+static bool EsMovimientoValido(Casilla[,] tablero, int fila, int columna, Ficha ficha)
 {
+     // Verificar si estamos en el borde del tablero
+    bool esBorde = fila == 0 || fila == tablero.GetLength(0) - 1 || columna == 0 || columna == tablero.GetLength(1) - 1;
+    
+    // Si la habilidad "Paso Fantasma" está activa, se puede atravesar los obstáculos
+    if (ficha.turnosPasoFantasma > 0)
+    {
+        if (esBorde && tablero[fila, columna] == Casilla.Obstaculo)
+        {
+            Console.WriteLine($"{ficha.Nombre} no puede atravesar un obstáculo en el borde.");
+            return false;
+        }
+        if (tablero[fila, columna] == Casilla.Obstaculo)
+        {
+            Console.WriteLine($"{ficha.Nombre} puede atravesar el obstáculo con Paso Fantasma.");
+        }
+        // No bloquear las trampas, ya que la ficha puede pasar por ellas igualmente
+        return true; // Permite el movimiento en cualquier casilla (Obstáculo o Trampa)
+    }
+
+    // Si la casilla es un obstáculo, y la habilidad no está activa, el movimiento no es válido
+    if (tablero[fila, columna] == Casilla.Obstaculo)
+    {
+        Console.WriteLine($"{ficha.Nombre} no puede atravesar el obstáculo.");
+        return false;
+    }
+
+    // Si la casilla es un camino, trampa u objeto, el movimiento es válido
     return tablero[fila, columna] == Casilla.Camino || 
            tablero[fila, columna] == Casilla.Trampa || 
-           tablero[fila, columna] == Casilla.Objeto; // Permitir movimiento a objetos
+           tablero[fila, columna] == Casilla.Objeto;
 }
+
 
 
     static void ActualizarTableroYNotificar(Ficha ficha, Casilla[,] tablero, int fila, int columna)
