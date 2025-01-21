@@ -22,6 +22,7 @@ public class Ficha
         Columna = columna;
         Color = color;
         Habilidad = habilidad;
+
         Cooldown = cooldown;
         Puntos = puntosIniciales;
         ObjetosRecogidos = 0; // Inicializar en 0

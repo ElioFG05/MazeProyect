@@ -24,10 +24,8 @@ partial class Program
 
     static void Main()
     {
-        System.Console.WriteLine("El primer jugador en alcanzar 3 `Objetos` amarillos gana la partida ");
-        System.Console.WriteLine("Evite las trampas(Casillas Rojas) asi evitara´ perder vida o que aumente el cooldown de su habilidad");
-        System.Console.WriteLine("Enjoy the game!");
-        System.Console.WriteLine("");
+        StartGame.MostrarPresentacion(); // Llamar a la presentación
+       
         // Generar tablero y trampas
         var (tablero, trampas) = Generar(Ancho, Alto, CantidadTrampas, CantidadObstaculos);
         Random random = new();
